@@ -28,4 +28,4 @@ sys.path.append(str(Path(__file__).parent))
 6. Make sure to update `credentials.py` by editing the desired attributes
 **NOTE** Never commit any credentials 
   
-7. To run file: `pipenv run python main.py`
+7. To run file: `python main.py`
