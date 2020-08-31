@@ -1,0 +1,3 @@
+[submodule "goTenna-Pro-Payloads"]
+	path = goTenna-Pro-Payloads
+	url = https://github.com/gotenna/goTenna-Pro-Payloads.git
