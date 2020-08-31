@@ -2,6 +2,9 @@ import requests
 import struct
 from credentials import Cred
 from gen.portal_pb2 import PBBackhaulResponse
+from apscheduler.schedulers.background import BackgroundScheduler
+import time
+from datetime import datetime
 
 
 def coords_to_binary(coordinates):
@@ -42,14 +45,14 @@ def hex_to_dec(hexadec):
 
 
 
-def backhaul(to_binary_string):
+def backhaul(location):
     """
     This function receives a serialized binary string data that will be backhauled to the /api/v2/backhaul endpoint
-    :param to_binary_string:
     :return: void
     """
     cred = Cred()
     token = cred.get_token()
+    temp = get_user_info(location)
 
     headers = {
         'Authorization': 'Bearer {token}'.format(token=token),
@@ -58,7 +61,7 @@ def backhaul(to_binary_string):
     }
 
     try:
-        r = requests.post('https://portal-stage.gotennapro.com/api/v2/backhaul', headers=headers, data=to_binary_string)
+        r = requests.post('https://portal-stage.gotennapro.com/api/v2/backhaul', headers=headers, data=temp)
         print('status code: {}'.format(r.status_code))
         print('Text: {}'.format(r.text))
         r.raise_for_status()
@@ -67,10 +70,48 @@ def backhaul(to_binary_string):
     except requests.exceptions.ConnectionError as err:
         print("Error connecting:", err)
 
+def get_timestamp():
+    """
+    Return the current timestamp
+    :return: timestamp
+    """
+    now = datetime.now()
+    timestamp = datetime.timestamp(now)
+    return timestamp
 
 
+def get_user_info(location):
+    """
+    Returns serialized user data for one node
+    :param location:
+    :return:
+    """
+    # Update user location with info
+    location.header.timestamp = get_timestamp()  # double
+    location.header.gid = 92190340361517  # int
+    location.header.callsign = "Christian"  # string
+    location.locationData.coordinate = coords_to_binary(
+        [40.755994, -73.860577])  # bytes
+    location.locationData.pli_location_accuracy = 65  # int
+
+    # Must be serialized to buffer so it can be sent to backhaul
+    return backhaul_data.SerializeToString()
 
 
+def scheduler(location):
+    sched = BackgroundScheduler(daemon=True)
+    sched.add_job(backhaul, 'interval', minutes=1, args=[location])
+    sched.start()
+    print('Press Ctrl+{0} to exit'.format('C'))
+
+    try:
+        while True:
+            time.sleep(59)
+    except (KeyboardInterrupt, SystemExit):
+        # Not strictly necessary if daemonic mode is enabled but should be done if possible
+        sched.shutdown()
+
+########################################################################################################################
 
 
 """
@@ -101,24 +142,7 @@ A locationData contains:
 ''''''
 # Add user location to backhaul
 location = backhaul_data.locations.add()
-
-# Update user location with info
-location.header.timestamp = 1628873628  # double
-location.header.gid = 92190340361517  # int
-location.header.callsign = "Christian"  # string
-location.locationData.coordinate = coords_to_binary(
-    [40.755994, -73.860577])  # bytes
-location.locationData.pli_location_accuracy = 65  # int
-
-
-# Must be serialized to buffer so it can be sent to backhaul
-to_binary_string = backhaul_data.SerializeToString()
-
-
-
-
-########################################################################################################################
-backhaul(to_binary_string)
+scheduler(location)
 
 
 
