@@ -1,0 +1,400 @@
+{
+  "users_starting_coordinates": {
+    "node0": {
+      "lat": 111,
+      "long": 222
+    },
+    "node1": {
+      "lat": 111,
+      "long": 222
+    },
+    "node2": {
+      "lat": 111,
+      "long": 222
+    },
+    "node3": {
+      "lat": 111,
+      "long": 222
+    },
+    "node4": {
+      "lat": 111,
+      "long": 222
+    },
+    "node5": {
+      "lat": 111,
+      "long": 222
+    },
+    "node6": {
+      "lat": 111,
+      "long": 222
+    },
+    "node7": {
+      "lat": 111,
+      "long": 222
+    },
+    "node8": {
+      "lat": 111,
+      "long": 222
+    },
+    "node9": {
+      "lat": 111,
+      "long": 222
+    },
+    "node10": {
+      "lat": 111,
+      "long": 222
+    },
+    "node11": {
+      "lat": 111,
+      "long": 222
+    },
+    "node12": {
+      "lat": 111,
+      "long": 222
+    },
+    "node13": {
+      "lat": 111,
+      "long": 222
+    },
+    "node14": {
+      "lat": 111,
+      "long": 222
+    },
+    "node15": {
+      "lat": 111,
+      "long": 222
+    },
+    "node16": {
+      "lat": 111,
+      "long": 222
+    },
+    "node17": {
+      "lat": 111,
+      "long": 222
+    },
+    "node18": {
+      "lat": 111,
+      "long": 222
+    },
+    "node19": {
+      "lat": 111,
+      "long": 222
+    },
+    "node20": {
+      "lat": 111,
+      "long": 222
+    },
+    "node21": {
+      "lat": 111,
+      "long": 222
+    },
+    "node22": {
+      "lat": 111,
+      "long": 222
+    },
+    "node23": {
+      "lat": 111,
+      "long": 222
+    },
+    "node24": {
+      "lat": 111,
+      "long": 222
+    },
+    "node25": {
+      "lat": 111,
+      "long": 222
+    },
+    "node26": {
+      "lat": 111,
+      "long": 222
+    },
+    "node27": {
+      "lat": 111,
+      "long": 222
+    },
+    "node28": {
+      "lat": 111,
+      "long": 222
+    },
+    "node29": {
+      "lat": 111,
+      "long": 222
+    },
+    "node30": {
+      "lat": 111,
+      "long": 222
+    },
+    "node31": {
+      "lat": 111,
+      "long": 222
+    },
+    "node32": {
+      "lat": 111,
+      "long": 222
+    },
+    "node33": {
+      "lat": 111,
+      "long": 222
+    },
+    "node34": {
+      "lat": 111,
+      "long": 222
+    },
+    "node35": {
+      "lat": 111,
+      "long": 222
+    },
+    "node36": {
+      "lat": 111,
+      "long": 222
+    },
+    "node37": {
+      "lat": 111,
+      "long": 222
+    },
+    "node38": {
+      "lat": 111,
+      "long": 222
+    },
+    "node39": {
+      "lat": 111,
+      "long": 222
+    },
+    "node40": {
+      "lat": 111,
+      "long": 222
+    },
+    "node41": {
+      "lat": 111,
+      "long": 222
+    },
+    "node42": {
+      "lat": 111,
+      "long": 222
+    },
+    "node43": {
+      "lat": 111,
+      "long": 222
+    },
+    "node44": {
+      "lat": 111,
+      "long": 222
+    },
+    "node45": {
+      "lat": 111,
+      "long": 222
+    },
+    "node46": {
+      "lat": 111,
+      "long": 222
+    },
+    "node47": {
+      "lat": 111,
+      "long": 222
+    },
+    "node48": {
+      "lat": 111,
+      "long": 222
+    },
+    "node49": {
+      "lat": 111,
+      "long": 222
+    },
+    "node50": {
+      "lat": 111,
+      "long": 222
+    },
+    "node51": {
+      "lat": 111,
+      "long": 222
+    },
+    "node52": {
+      "lat": 111,
+      "long": 222
+    },
+    "node53": {
+      "lat": 111,
+      "long": 222
+    },
+    "node54": {
+      "lat": 111,
+      "long": 222
+    },
+    "node55": {
+      "lat": 111,
+      "long": 222
+    },
+    "node56": {
+      "lat": 111,
+      "long": 222
+    },
+    "node57": {
+      "lat": 111,
+      "long": 222
+    },
+    "node58": {
+      "lat": 111,
+      "long": 222
+    },
+    "node59": {
+      "lat": 111,
+      "long": 222
+    },
+    "node60": {
+      "lat": 111,
+      "long": 222
+    },
+    "node61": {
+      "lat": 111,
+      "long": 222
+    },
+    "node62": {
+      "lat": 111,
+      "long": 222
+    },
+    "node63": {
+      "lat": 111,
+      "long": 222
+    },
+    "node64": {
+      "lat": 111,
+      "long": 222
+    },
+    "node65": {
+      "lat": 111,
+      "long": 222
+    },
+    "node66": {
+      "lat": 111,
+      "long": 222
+    },
+    "node68": {
+      "lat": 111,
+      "long": 222
+    },
+    "node69": {
+      "lat": 111,
+      "long": 222
+    },
+    "node70": {
+      "lat": 111,
+      "long": 222
+    },
+    "node71": {
+      "lat": 111,
+      "long": 222
+    },
+    "node72": {
+      "lat": 111,
+      "long": 222
+    },
+    "node73": {
+      "lat": 111,
+      "long": 222
+    },
+    "node74": {
+      "lat": 111,
+      "long": 222
+    },
+    "node75": {
+      "lat": 111,
+      "long": 222
+    },
+    "node76": {
+      "lat": 111,
+      "long": 222
+    },
+    "node77": {
+      "lat": 111,
+      "long": 222
+    },
+    "node78": {
+      "lat": 111,
+      "long": 222
+    },
+    "node79": {
+      "lat": 111,
+      "long": 222
+    },
+    "node80": {
+      "lat": 111,
+      "long": 222
+    },
+    "node81": {
+      "lat": 111,
+      "long": 222
+    },
+    "node82": {
+      "lat": 111,
+      "long": 222
+    },
+    "node83": {
+      "lat": 111,
+      "long": 222
+    },
+    "node84": {
+      "lat": 111,
+      "long": 222
+    },
+    "node85": {
+      "lat": 111,
+      "long": 222
+    },
+    "node86": {
+      "lat": 111,
+      "long": 222
+    },
+    "node87": {
+      "lat": 111,
+      "long": 222
+    },
+    "node88": {
+      "lat": 111,
+      "long": 222
+    },
+    "node89": {
+      "lat": 111,
+      "long": 222
+    },
+    "node90": {
+      "lat": 111,
+      "long": 222
+    },
+    "node91": {
+      "lat": 111,
+      "long": 222
+    },
+    "node92": {
+      "lat": 111,
+      "long": 222
+    },
+    "node93": {
+      "lat": 111,
+      "long": 222
+    },
+    "node94": {
+      "lat": 111,
+      "long": 222
+    },
+    "node95": {
+      "lat": 111,
+      "long": 222
+    },
+    "node96": {
+      "lat": 111,
+      "long": 222
+    },
+    "node97": {
+      "lat": 111,
+      "long": 222
+    },
+    "node98": {
+      "lat": 111,
+      "long": 222
+    },
+    "node99": {
+      "lat": 111,
+      "long": 222
+    }
+  }
+}

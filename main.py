@@ -122,16 +122,18 @@ def scheduler(location):
 
 
 def get_route_coordinates():
+    cred = Cred()
     data = None
     headers = {
         'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
     }
     base_url = 'https://api.openrouteservice.org'
-    api_key = '5b3ce3597851110001cf6248d4c71ce7a2854a8db35ac96903e7fed3'
+    api_key = cred.api_key
 
     try:
         r = requests.get(
-            f'{base_url}/v2/directions/driving-car?api_key={api_key}&start=-73.860208,%2040.755835&end=-73.954549,%2040.699929',
+            f'{base_url}/v2/directions/driving-car?api_key={api_key}&start=-73.860208,%2040.755835&end=-73.954549,'
+            f'%2040.699929',
             headers=headers)
         data = r.json()
         r.raise_for_status()
