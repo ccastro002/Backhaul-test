@@ -10,6 +10,8 @@ class Cred():
         self.password = ''
         self.client_key = ''
         self.client_id = 0
+        self.api_key = ''
+
 
     def get_token(self):
         base = 'https://portal-stage.gotennapro.com/'
