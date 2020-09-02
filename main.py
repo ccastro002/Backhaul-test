@@ -2,9 +2,10 @@ import requests
 import struct
 from credentials import Cred
 from gen.portal_pb2 import PBBackhaulResponse
-from apscheduler.schedulers.background import BackgroundScheduler
 import time
 from datetime import datetime
+import json
+import os
 
 
 def coords_to_binary(coordinates):
@@ -51,7 +52,7 @@ def backhaul(location, coordinates: tuple):
     """
     cred = Cred()
     token = cred.get_token()
-    temp = get_user_info(location, coordinates)
+    temp = update_user_info(location, coordinates)
 
     headers = {
         'Authorization': 'Bearer {token}'.format(token=token),
@@ -80,11 +81,19 @@ def get_timestamp():
     return timestamp
 
 
-def get_user_info(location, coordinates):
+def update_user_info(location, coordinates) -> object:
     """
     Returns serialized user data for one node
     :param coordinates:
-    :param location:
+    :param location - pli header:
+    PLI header - A header can be added to shapes, pins, and user_locations. It consists of:
+    id (optional) - int
+    gid (optional) - int
+    timestamp (optional) - double
+    name (optional) - string
+    callsign (optional) - string
+    All fields are optional but must follow the correct type.
+    This doesn't mean it will pass portal's request validation
     :return:
     """
     # Update user location with info
@@ -106,7 +115,7 @@ def scheduler(location):
     sched.start() '''
     print('Press Ctrl+{0} to exit'.format('C'))
 
-    temp_data = get_route_coordinates()  # list of list
+    temp_data = get_route_coordinates((40.893985, -73.884962),(40.634930, -73.964389))  # list of list  TODO fix this
     index = 0
     try:
         while True:
@@ -121,19 +130,18 @@ def scheduler(location):
         print('Stopping backhaul')
 
 
-def get_route_coordinates():
+def get_route_coordinates(start_coordinates: tuple, end_coordinates: tuple):
     cred = Cred()
     data = None
     headers = {
         'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
     }
     base_url = 'https://api.openrouteservice.org'
-    api_key = cred.api_key
 
     try:
         r = requests.get(
-            f'{base_url}/v2/directions/driving-car?api_key={api_key}&start=-73.860208,%2040.755835&end=-73.954549,'
-            f'%2040.699929',
+            f"{base_url}/v2/directions/foot-walking?api_key={cred.api_key}&start={start_coordinates[1]},"
+            f"{start_coordinates[0]}&end={end_coordinates[1]},{end_coordinates[0]}",
             headers=headers)
         data = r.json()
         r.raise_for_status()
@@ -145,38 +153,54 @@ def get_route_coordinates():
     return data['features'][0]['geometry']['coordinates']
 
 
-########################################################################################################################
+def create_100_location_instances(backhaul_pbb):
+    pli_locations = {}
+    """
+       A PBBackhaulResponse will create a backhaul object where we can add shapes,
+       pins, user locations, and messages. This will be serialized and sent to the backhaul api
+    """
+    for i in range(0, 100):
+        user = f'node{i}'
+        location = backhaul_pbb.locations.add()
+        pli_locations[user] = location
+
+    return pli_locations
 
 
-"""
-A PBBackhaulResponse will create a backhaul object where we can add shapes,
-pins, user locations, and messages. This will be serialized and sent to the backhaul api
-"""
-backhaul_data = PBBackhaulResponse()
+def update_users_starting_info(users_pli):
+    data = json.load(open('./data/users_info.json'))['users']  #dictionary
 
-"""
-PLI header
-A header can be added to shapes, pins, and user_locations. It consists of:
-id (optional) - int
-gid (optional) - int
-timestamp (optional) - double
-name (optional) - string
-callsign (optional) - string
-All fields are optional but must follow the correct type.
-This doesn't mean it will pass portal's request validation
-"""
+    for callsign, location in users_pli.items():
+        user_info = data[callsign]
+        location.header.timestamp = get_timestamp()  # double
+        location.header.gid = user_info['gid']
+        location.header.callsign = callsign
+        location.locationData.coordinate = coords_to_binary(
+            [40.893985, -73.884962])  # bytes
+        location.locationData.pli_location_accuracy = 65
 
-"""
-Create a user location
-A user location has a header (optional) and a locationData (optional)
-A locationData contains:
-    - coordinate (optional)
-    - pli_location_accuracy (optional)
-"""
-''''''
-# Add user location to backhaul
-location = backhaul_data.locations.add()
-scheduler(location)
+
+    ########################################################################################################################
+if __name__ == "__main__":
+    backhaul_data = PBBackhaulResponse()
+    ## 1. Create 200 backhaul _data location instances, need to save in dictionary.
+    #temp = create_100_location_instances(backhaul_data)
+    #update_users_starting_info(temp)
+    #scheduler(temp['node0'])
+
+
+    # update all fields for each user.
+
+
+
+
+
+
+
+
+# Add user location to backhaul    starting location for everoyone 40.893985, -73.884962
+#location = backhaul_data.locations.add()
+#scheduler(location)
 
 
 
