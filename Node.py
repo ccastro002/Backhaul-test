@@ -7,3 +7,4 @@ class Node(object):
         self.end_coordinates = None
         self.backhaul_response = None
         self.location_headers = None
+        self.message_header = None
