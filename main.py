@@ -1,148 +1,72 @@
-import requests
-import struct
-from credentials import Cred
-from gen.portal_pb2 import PBBackhaulResponse
-from apscheduler.schedulers.background import BackgroundScheduler
-import time
-from datetime import datetime
+from Backhaul import Backhaul
+import json
+import threading
+from Node import Node
 
 
-def coords_to_binary(coordinates):
-    """
-    Converts coordinates to a byte string
-    This how mobile currently handles their converting their coordinates
-    """
-    [latitude, longitude] = coordinates
-    latitude_binary = struct.pack('<d', latitude)
-    longitude_binary = struct.pack('<d', longitude)
-    return latitude_binary + longitude_binary
+def update_nodes_info(nodes):
+    users_info = json.load(open('./data/users_info.json'))['users']
+    for node in nodes:
+        info = users_info[node.callsign]
+        node.gid = info['gid']
+        node.end_coordinates = info['end_location']
+
+def start_threads(function, arg):
+    list_of_threads = [threading.Thread(target=function, args=(node,)) for node in arg]
+    for thread in list_of_threads:
+        thread.start()
+    for thread in list_of_threads:
+        thread.join()
+
+def set_users_gid_in_portal(nodes: list):
+    test = Backhaul()
+    for node in nodes:
+        test.set_gids(node)
 
 
-def multi_coords_to_binary(coordinates):
-    """
-    Converts a list of coordinates into a byte string
-    Reimplements mobile's algorithm
-    """
+def test_pli_backhaul():
+    ## 1. Create 20 backhaul _data location instances, need to save in dictionary.
+    users_info = json.load(open('./data/users_info.json'))['users'].keys()  # get users call signs
+    nodes = [Node(callsign) for callsign in users_info]
+    update_nodes_info(nodes)
+    test1 = Backhaul(20)
+    test1.create_location_instances(nodes)
 
-    multi_coords_binary = bytes()
-    for coord in coordinates:
-        lat_long_binary = coords_to_binary(
-            [coord['latitude'], coord['longitude']])
-        multi_coords_binary += lat_long_binary
+    # 2. update all fields for each user.
+    test1.update_users_starting_info(nodes)  # update nodes starting information
 
-    return multi_coords_binary
+    # 3 get all users route path
+    test1.update_users_route(nodes)
 
+    # 4 get each nodes tokens
+    test1.get_users_tokens(nodes)
 
-def hex_to_dec(hexadec):
-    """
-    Colors are all in decimal format so we can use this to convert hex values
-    of colors to decimal. You can also use an online converter.
-    The FF needs to be appended because the values mobile uses are in
-    ARGB format (for example FFFF00FF)
-    """
-    alpha = 'FF'
-    return int(alpha + hexadec, base=16)
+    # 5 start threads
+    start_threads(test1.pli_scheduler, nodes)
 
+def test_backhaul_messages():
+    users_info = list(json.load(open('./data/users_info.json'))['users'].keys())[0:5]  # get users call signs
+    nodes = [Node(callsign) for callsign in users_info]
+    update_nodes_info(nodes)
+    test1 = Backhaul(5)
+    test1.create_message_instances(nodes)
 
+    # 4 get each nodes tokens
+    test1.get_users_tokens(nodes)
+    # 5 set users gid in the portal
+    set_users_gid_in_portal(nodes)
 
-def backhaul(location):
-    """
-    This function receives a serialized binary string data that will be backhauled to the /api/v2/backhaul endpoint
-    :return: void
-    """
-    cred = Cred()
-    token = cred.get_token()
-    temp = get_user_info(location)
+    # 6 start threads
+    start_threads(test1.message_scheduler, nodes)
 
-    headers = {
-        'Authorization': 'Bearer {token}'.format(token=token),
-        'Content-Type': 'application/protobuf',
-        'Accept': 'application/json'
-    }
-
-    try:
-        r = requests.post('https://portal-stage.gotennapro.com/api/v2/backhaul', headers=headers, data=temp)
-        print('status code: {}'.format(r.status_code))
-        print('Text: {}'.format(r.text))
-        r.raise_for_status()
-    except requests.exceptions.HTTPError as err:
-        print(err.response.text)
-    except requests.exceptions.ConnectionError as err:
-        print("Error connecting:", err)
-
-def get_timestamp():
-    """
-    Return the current timestamp
-    :return: timestamp
-    """
-    now = datetime.now()
-    timestamp = datetime.timestamp(now)
-    return timestamp
+if __name__ == "__main__":
+    test_backhaul_messages()
 
 
-def get_user_info(location):
-    """
-    Returns serialized user data for one node
-    :param location:
-    :return:
-    """
-    # Update user location with info
-    location.header.timestamp = get_timestamp()  # double
-    location.header.gid = 92190340361517  # int
-    location.header.callsign = "Christian"  # string
-    location.locationData.coordinate = coords_to_binary(
-        [40.755994, -73.860577])  # bytes
-    location.locationData.pli_location_accuracy = 65  # int
-
-    # Must be serialized to buffer so it can be sent to backhaul
-    return backhaul_data.SerializeToString()
 
 
-def scheduler(location):
-    sched = BackgroundScheduler(daemon=True)
-    sched.add_job(backhaul, 'interval', minutes=1, args=[location])
-    sched.start()
-    print('Press Ctrl+{0} to exit'.format('C'))
-
-    try:
-        while True:
-            time.sleep(59)
-    except (KeyboardInterrupt, SystemExit):
-        # Not strictly necessary if daemonic mode is enabled but should be done if possible
-        sched.shutdown()
-
-########################################################################################################################
 
 
-"""
-A PBBackhaulResponse will create a backhaul object where we can add shapes,
-pins, user locations, and messages. This will be serialized and sent to the backhaul api
-"""
-backhaul_data = PBBackhaulResponse()
-
-"""
-PLI header
-A header can be added to shapes, pins, and user_locations. It consists of:
-id (optional) - int
-gid (optional) - int
-timestamp (optional) - double
-name (optional) - string
-callsign (optional) - string
-All fields are optional but must follow the correct type.
-This doesn't mean it will pass portal's request validation
-"""
-
-"""
-Create a user location
-A user location has a header (optional) and a locationData (optional)
-A locationData contains:
-    - coordinate (optional)
-    - pli_location_accuracy (optional)
-"""
-''''''
-# Add user location to backhaul
-location = backhaul_data.locations.add()
-scheduler(location)
-
-
+        
+        
 
