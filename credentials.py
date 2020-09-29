@@ -7,10 +7,10 @@ class Cred():
         self.organization = 'gotennaqa'
         self.username = username
         self.email = 'christian@gotenna.com'
-        self.password = 'testingqa123$$'
+        self.password = 'test123$'
         self.client_key = 'jJXcr6wHK9NE3fVKf0nRUyIH3FFn3q61jSbigQLo'
         self.client_id = 2
-        self.api_key = '5b3ce3597851110001cf6248d4c71ce7a2854a8db35ac96903e7fed3'
+        self.api_key = '5b3ce3597851110001cf6248a599d05c89d643dfac0bfd25d8c71c4a'
 
 
     def get_token(self):
