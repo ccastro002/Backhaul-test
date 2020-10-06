@@ -1,5 +1,4 @@
 import threading
-
 import requests
 import struct
 from credentials import Cred
@@ -8,6 +7,7 @@ import time
 from datetime import datetime
 import json
 import random
+from random import uniform
 
 
 class Backhaul():
@@ -50,14 +50,13 @@ class Backhaul():
         alpha = 'FF'
         return int(alpha + hexadec, base=16)
 
-    def set_gids(self, node):
+    def set_gid(self, node):
         headers = {
             'Authorization': 'Bearer {token}'.format(token=node.token),
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         }
         data = {"gid": node.gid}
-        print(data)
 
         try:
             r = requests.put(f'{self.base_url}/api/v2/user/gid', headers=headers, data=json.dumps(data,))
@@ -164,7 +163,7 @@ class Backhaul():
 
         try:
             r = requests.get(
-                f"{base_url}/v2/directions/foot-walking?api_key={cred.api_key}&start={start_coordinates[1]},"
+                f"{base_url}/v2/directions/driving-car?api_key={cred.api_key}&start={start_coordinates[1]},"
                 f"{start_coordinates[0]}&end={end_coordinates[1]},{end_coordinates[0]}",
                 headers=headers)
             data = r.json()
@@ -189,7 +188,8 @@ class Backhaul():
             print(type(node.backhaul_response))
 
     def update_users_starting_info(self, nodes: list):
-        for node in nodes[:self.number]:
+        for i in range(self.number):
+            node = nodes[i]
             node.location_headers.header.timestamp = self.get_timestamp()  # double
             node.location_headers.header.gid = node.gid
             node.location_headers.header.callsign = node.callsign
@@ -200,26 +200,34 @@ class Backhaul():
     def update_users_route(self, nodes: list):
         user_routes = {}
 
-        for node in nodes[0:self.number]:
+        for i in range(self.number):
+            node = nodes[i]
             coordinates = node.end_coordinates
             end_coordinates = (coordinates['lat'], coordinates['long'])
-            node.route_path = self.get_route_coordinates((40.893985, -73.884962), end_coordinates)
-            print(node.route_path)
+            node.route_path = self.get_route_coordinates((42.671992,-73.809308), end_coordinates)
+            print(node.callsign, end='\n')
+            time.sleep(5)
         return user_routes
 
     def get_users_tokens(self, nodes: list):
         '''Returns a dictionary with tokens'''
-        for node in nodes[:self.number]:
+        for node in nodes:
             cred = Cred(node.callsign)
+            print('Getting token:',node.callsign, end='\n')
             node.token = cred.get_token()
+
 
     def get_random_id(self):
         return random.randint(10000000000000, 99999999999999)
 
+    def get_random_geo_coordinate(self):
+        return uniform(-90, 90), uniform(-180, 180)
+
+
     def message_backhaul(self, node, message):
 
         # # Update message with info
-        node.message_header.header.id = self.get_random_id()  # int
+        node.message_header.header.id = str(self.get_random_id()) # int
         node.message_header.header.timestamp = self.get_timestamp()  # double
         node.message_header.header.gid = node.gid  # int
         node.message_header.header.callsign = node.callsign  # string
@@ -232,7 +240,7 @@ class Backhaul():
     def message_scheduler(self, node):
         print('Press Ctrl+{0} to exit'.format('C'))
         try:
-            for i in range(0, 101):
+           while True:
                 message = node.callsign + ': ' + str(time.time())
                 print(f'{node.callsign} backhauling message: {message}', end='\n')
                 data = self.message_backhaul(node, message)  # nee to get serialized data , then backhaul
@@ -243,10 +251,113 @@ class Backhaul():
             print('Stopping backhaul')
 
     def create_message_instances(self, nodes: list):
-        for node in nodes[0:self.number]:
+        """This will add a backhaul data instance its message headers for EACH node specified by the number"""
+        for i in range(self.number):
+            node = nodes[i]
             backhaul_data = PBBackhaulResponse()
             message = backhaul_data.messages.add()
             node.backhaul_response = backhaul_data
             node.message_header = message
+
+    def update_nodes_backhaulResponse(self, nodes:list):
+        """This only create a Backhaul response and adds it to each node attributes"""
+        for node in nodes:
+            node.backhaul_response = PBBackhaulResponse()
+
+    def create_random_pin(self, all_nodes, backhaul_node):
+        backhaul_data = backhaul_node.backhaul_response  #one node is backhauling everything
+
+        for node in all_nodes:
+            pin = backhaul_data.pins.add()
+            # Update pin with info
+            pin.header.id = str(self.get_random_id()) # int
+            pin.header.name = "pin-"+ str(random.randint(0,1000)) # string
+            pin.header.gid = node.gid  # int
+            pin.header.timestamp = self.get_timestamp()  # double
+            pin.header.callsign = node.callsign # string
+            coordinate = self.get_random_geo_coordinate()
+            pin.pinData.coordinate = self.coords_to_binary(
+            [coordinate[0], coordinate[1]])  # bytes
+            pin.pinData.pin_type = random.randint(0,2) #0 1 2
+            time.sleep(2)
+
+        return backhaul_data.SerializeToString()
+
+    def create_circle(self, all_nodes, backhaul_node):
+        backhaul_data = backhaul_node.backhaul_response  # one node is backhauling everything
+
+        for node in all_nodes:
+            circle = backhaul_data.shapes.add()
+            # Update circle with info
+            coordinate = self.get_random_geo_coordinate()
+            circle.shapeData.circle_data.center = self.coords_to_binary(
+                [coordinate[0], coordinate[1]])  # bytes
+            circle.shapeData.circle_data.radius = random.randint(1000,5000)  # int
+            circle.shapeData.color = self.hex_to_dec('0000FF')  # decimal of hexadec
+            circle.header.id = str(self.get_random_id())  # int
+            circle.header.gid = node.gid  # int
+            circle.header.timestamp = self.get_timestamp() # double
+            circle.header.name = 'circle'+str(random.randint(0,1000))  # string
+            circle.header.callsign = node.callsign  # string"""
+
+        return backhaul_data.SerializeToString()
+
+
+    def create_line(self, all_nodes, backhauk_node):
+        backhaul_data = backhauk_node.backhaul_response
+
+        for node in all_nodes:
+            coordinate1 = self.get_random_geo_coordinate()
+            coordinate2 = self.get_random_geo_coordinate()
+            coordinate3 = self.get_random_geo_coordinate()
+            line = backhaul_data.shapes.add()
+            line_coords = [
+                {
+                    "latitude": coordinate1[0],
+                    "longitude": coordinate1[1]
+                },
+                {
+                    "latitude": coordinate2[0],
+                    "longitude": coordinate2[1]
+                },
+                {
+                    "latitude": coordinate3[0],
+                    "longitude": coordinate3[1]
+                }
+            ]
+            # Update line with info
+            line.header.id = str(self.get_random_id()) # int
+            line.header.name = "line"+str(random.randint(0,1000)) # string
+            line.header.gid = node.gid # int
+            line.header.timestamp = self.get_timestamp()  # double
+            line.shapeData.color = self.hex_to_dec('FF4444')  # decimal of hexadec
+            line.shapeData.route_data.data_points = self.multi_coords_to_binary(
+                line_coords)  # byte
+            line.header.callsign = node.callsign # string
+
+        return backhaul_data.SerializeToString()
+
+    def shape_scheduler(self, all_nodes, backhaul_node):
+        """Backhaul user will always be node0"""
+        data = None
+
+        print('Press Ctrl+{0} to exit'.format('C'))
+        try:
+            while True:
+                # 0 -pin , 1 circle, and 2 for line
+                shape = random.randint(0,2)
+                if shape == 0:
+                    data = self.create_random_pin(all_nodes, backhaul_node)
+                elif shape == 1:
+                    data = self.create_circle(all_nodes, backhaul_node)
+                elif shape == 2:
+                    data = self.create_line(all_nodes, backhaul_node)
+                print(f'{backhaul_node.callsign} backhauling shape:', end='\n')
+               # data = self.create_random_pin(all_nodes, backhaul_node)  # nee to get serialized data , then backhaul
+                self.backhaul(data, backhaul_node.token)
+                time.sleep(59)
+
+        except (KeyboardInterrupt, SystemExit):
+            print('Stopping backhaul')
 
 ########################################################################################################################
