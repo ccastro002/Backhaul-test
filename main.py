@@ -51,7 +51,7 @@ def test_backhaul_messages(number_of_networks):
     users_info = list(json.load(open('./data/users_info.json'))['users'].keys())[0:number_of_networks]# get users call signs
     nodes = [Node(callsign) for callsign in users_info]
     update_nodes_info(nodes, number_of_networks)
-    test1 = Backhaul(5)
+    test1 = Backhaul(number_of_networks)
     test1.create_message_instances(nodes)
 
     # 4 get each nodes tokens
@@ -62,28 +62,35 @@ def test_backhaul_messages(number_of_networks):
     # 6 start threads
     start_threads(test1.message_scheduler, nodes)
 
-if __name__ == "__main__":
-    #test_backhaul_messages(5)
-    #test_pli_backhaul(5)
 
-    number = 5
-
+def test_backhaul_shapes(number):
     users_info = list(json.load(open('./data/users_info.json'))['users'].keys())[0:number]  # get users call signs
 
     nodes = [Node(callsign) for callsign in users_info]
     update_nodes_info(nodes, number)
     test1 = Backhaul(number)
-    test1.update_nodes_backhaulResponse(nodes)  #each node has a backhaul response node
+    test1.update_nodes_backhaulResponse(nodes)  # each node has a backhaul response node
     test1.get_users_tokens(nodes)
     # 5 set users gid in the portal
-    set_users_gid_in_portal(nodes,number)
+    set_users_gid_in_portal(nodes, number)
 
-
-    list_of_threads = [threading.Thread(target=test1.shape_scheduler, args=(nodes,node)) for node in nodes]
+    list_of_threads = [threading.Thread(target=test1.shape_scheduler, args=(nodes, node)) for node in nodes]
     for thread in list_of_threads:
         thread.start()
     for thread in list_of_threads:
         thread.join()
+
+if __name__ == "__main__":
+    #test_backhaul_messages(5)
+    #test_pli_backhaul(5)
+    #test_backhaul_shapes()
+    number = 3
+    #est_pli_backhaul(number)
+    #test_backhaul_messages(5)
+    test_backhaul_shapes(number)
+
+
+
 
 
 
